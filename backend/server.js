@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { ConnDB } from './config/db.js';
-//import router from './routes/index.routes.js';
+import router from './routes/index.routes.js';
 
 dotenv.config();
 const app = express();
@@ -13,13 +13,13 @@ app.use(cors({
   origin: ['http://localhost:3000'],
 }));
 
-//app.use(morgan('dev'));
+app.use(morgan('dev'));
 
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-// app.use('/api', router);
+app.use('/api', router);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
