@@ -53,7 +53,6 @@ class Truck(models.Model):
         max_length=255, unique=True, null=False, blank=False
     )
     weight = models.IntegerField(null=False, blank=False)
-    driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=20,
         choices=[
@@ -64,9 +63,15 @@ class Truck(models.Model):
         ],
         default="waiting",
     )
+
+class ParkingRecord(models.Model):
+    truck_id = models.ForeignKey(Truck, on_delete=models.CASCADE)
+    driver_id = models.ForeignKey(Driver, on_delete=models.CASCADE)
     arrival_time = models.DateTimeField(default=timezone.now)
     departure_time = models.DateTimeField(null=True, blank=True)
     parking_lot = models.ForeignKey("ParkingLot", on_delete=models.CASCADE)
+    weight = models.IntegerField(null=False, blank=False)
+    price = models.IntegerField(null=False, blank=False)
 
 
 class ParkingLot(models.Model):

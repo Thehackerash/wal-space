@@ -23,3 +23,14 @@ class DriverDetailAPI(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
+
+class TruckAPI(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer
+
+
+class TruckDetailAPI(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer

@@ -29,8 +29,8 @@ ALLOWED_HOSTS = []
 from datetime import timedelta
 from django.conf import settings
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=9991),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=9992),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=3),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=9),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
