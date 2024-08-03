@@ -18,6 +18,6 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(Driver)
 admin.site.register(Inventory)
-admin.register(ParkingLot)
-admin.register(Truck)
-admin.register(Warehouse)
+admin.site.register(ParkingLot)
+admin.site.register(Truck)
+admin.site.register(Warehouse)
