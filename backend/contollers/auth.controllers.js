@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import mongoose from 'mongoose';
 import {
     response_200,
     response_500,
@@ -13,12 +14,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function register(req, res){
     try {
-        const {FirstName, LastName, email, password} = req.body;
+        const {WarehouseId, password} = req.body;
         console.log(FirstName)
 
-        const userAlreadyPresent = await prisma.user.findUnique({
+        const userAlreadyPresent = await warehouse.findone({
             where: {
-                Email: email
+                WarehouseId: Id 
             }
         });
 
