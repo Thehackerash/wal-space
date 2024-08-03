@@ -27,6 +27,7 @@ class Warehouse(models.Model):
     country = models.CharField(max_length=255, null=False, blank=False)
     capacity = models.IntegerField(null=False, blank=False)
     current_occupancy = models.IntegerField(default=0)
+    parking_capacity = models.IntegerField(null=False, blank=False)
     operational_status = models.CharField(
         max_length=20,
         choices=[
@@ -64,6 +65,7 @@ class Truck(models.Model):
         default="waiting",
     )
 
+
 class ParkingRecord(models.Model):
     truck_id = models.ForeignKey(Truck, on_delete=models.CASCADE)
     driver_id = models.ForeignKey(Driver, on_delete=models.CASCADE)
@@ -72,12 +74,22 @@ class ParkingRecord(models.Model):
     parking_lot = models.ForeignKey("ParkingLot", on_delete=models.CASCADE)
     weight = models.IntegerField(null=False, blank=False)
     price = models.IntegerField(null=False, blank=False)
+    point_of_origin = models.ForeignKey(
+        Warehouse, on_delete=models.CASCADE, related_name="origin_records"
+    )
+    destination = models.ForeignKey(
+        Warehouse, on_delete=models.CASCADE, related_name="destination_records"
+    )
 
 
 class ParkingLot(models.Model):
-    capacity = models.IntegerField(null=False, blank=False)
-    current_occupancy = models.IntegerField(default=0)
-    trucks = models.ManyToManyField(Truck, related_name="parking_lots")
+    truck = models.ForeignKey(
+        Truck,
+        on_delete=models.CASCADE,
+        related_name="parking_lots",
+        blank=True,
+        null=True,
+    )
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
 
 

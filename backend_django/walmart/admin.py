@@ -2,7 +2,15 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
-from .models import Driver, Inventory, Manager, ParkingLot, Truck, Warehouse
+from .models import (
+    Driver,
+    Inventory,
+    Manager,
+    ParkingLot,
+    Truck,
+    Warehouse,
+    ParkingRecord,
+)
 
 admin.site.unregister(User)
 
@@ -21,3 +29,4 @@ admin.site.register(Inventory)
 admin.site.register(ParkingLot)
 admin.site.register(Truck)
 admin.site.register(Warehouse)
+admin.site.register(ParkingRecord)
