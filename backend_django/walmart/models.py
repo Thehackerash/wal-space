@@ -14,6 +14,9 @@ class Driver(models.Model):
     zip_code = models.CharField(max_length=255, null=False, blank=False)
     country = models.CharField(max_length=255, null=False, blank=False)
 
+    def __str__(self):
+        return self.name
+
 
 class Warehouse(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)
@@ -76,3 +79,6 @@ class ParkingLot(models.Model):
 class Manager(models.Model):
     warehouse_id = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
     user = models.OneToOneField(to=User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.username
