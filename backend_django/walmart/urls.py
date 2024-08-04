@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from .views import (
     home,
+    ManagerAPI,
     DriverAPI,
     DriverDetailAPI,
     TruckAPI,
@@ -13,6 +14,7 @@ from .views import (
 
 urlpatterns = [
     path("", home, name="home"),
+    path("manager/", ManagerAPI.as_view(), name="manager_list"),
     path("drivers/", DriverAPI.as_view(), name="driver_list"),
     path("drivers/<int:pk>/", DriverDetailAPI.as_view(), name="driver_detail"),
     path("truck/", TruckAPI.as_view(), name="truck_list"),

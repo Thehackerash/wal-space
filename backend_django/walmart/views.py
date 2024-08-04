@@ -1,12 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 from .serializers import (
     DriverSerializer,
     TruckSerializer,
     ParkingRecordSerializer,
     WarehouseSerializer,
 )
-from .models import Driver, Truck, ParkingRecord, Warehouse, ParkingLot
+from .models import User, Driver, Truck, ParkingRecord, Warehouse, ParkingLot
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics
@@ -16,7 +18,6 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 # Create your views here.
 def home(request):
     return HttpResponse("Hello, World!")
-
 
 class DriverAPI(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -47,6 +48,13 @@ class ParkingRecordAPI(generics.ListAPIView):
     queryset = ParkingRecord.objects.all()
     serializer_class = ParkingRecordSerializer
 
+class AddTruck(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        truck = TruckSerializer(data=data)
+        
 
 class ParkingRecordInsertAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -85,3 +93,19 @@ class BookingDetails(APIView):
             },
             status=200,
         )
+
+class ManagerAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        username = request.user.username
+        user = get_object_or_404(User, username=username)
+        print(user)
+        user_details = {
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+        }
+        print(user_details)
+        return JsonResponse(user_details)
