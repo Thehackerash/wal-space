@@ -73,6 +73,7 @@ class Truck(models.Model):
 class ParkingRecord(models.Model):
     truck_id = models.ForeignKey(Truck, on_delete=models.CASCADE)
     driver_id = models.ForeignKey(Driver, on_delete=models.CASCADE)
+    expected_arrival_time = models.DateTimeField(default=timezone.now)
     arrival_time = models.DateTimeField(default=timezone.now)
     departure_time = models.DateTimeField(null=True, blank=True)
     parking_lot = models.ForeignKey("ParkingLot", on_delete=models.CASCADE)
