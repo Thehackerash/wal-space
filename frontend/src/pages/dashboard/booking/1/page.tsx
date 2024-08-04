@@ -34,11 +34,11 @@ const page = () => {
     console.log("Success:", values);
     try {
       const response = await axios.post(
-        `${backend_url}/api/parking-record/`,
+        `${backend_url}/api/parking-record/insert/`,
         {
           truck_id: values.Truck,
           driver_id: values.driver,
-          destination_id: values.destination,
+          destination: values.destination,
           weight: values.weight,
         },
         {
