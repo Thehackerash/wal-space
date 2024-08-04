@@ -76,7 +76,7 @@ function NotFound() {
               <button
                 className="rounded-md w-full text-center  bg-blue-700 text-white p-2 hover:bg-blue-800"
                 onClick={() => {
-                  navigate("/my-chatbots");
+                  navigate("/dashboard");
                 }}
               >
                 Go Home
@@ -87,7 +87,7 @@ function NotFound() {
 
         {/* footer */}
         <footer className="fixed text-xs md:text-base bottom-0 left-0 right-0 dark:bg-black flex justify-center items-center dark:text-zinc-300 text-zinc-600 py-4">
-          <div className="mx-5 hover:cursor-pointer text-nowrap">&copy; 2024 AmaVerse</div>
+          <div className="mx-5 hover:cursor-pointer text-nowrap">&copy; 2024 WALMART</div>
           <div className="mx-5 hover:cursor-pointer">Cookie policy</div>
           <div className="mx-5 hover:cursor-pointer">Privacy Policy</div>
           <div className="mx-5 hover:cursor-pointer">Terms & Conditions</div>

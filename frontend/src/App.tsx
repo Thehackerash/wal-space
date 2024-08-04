@@ -4,11 +4,13 @@ import { useNavigate, Routes, Route } from "react-router-dom";
 import Cookies from "js-cookie";
 import Login from "./pages/login/page";
 import Signup from "./pages/signup/page";
-import { ConfigProvider, message, theme } from "antd";
+import { ConfigProvider, theme } from "antd";
 import NotFound from "./pages/error_pages/NotFound";
 import Dashboard from "./pages/dashboard/page";
 import Logout from "./pages/logout/page";
-
+import Profile from "./pages/dashboard/profile/page";
+import Booking from "./pages/dashboard/booking/page";
+import Transport from "./pages/dashboard/transport/page";
 function App() {
   const navigate = useNavigate();
   const accessToken = Cookies.get("accessToken");
@@ -105,7 +107,38 @@ function App() {
                 </div>
               </div>
             }
-          />
+          >
+            <Route
+              path="profile"
+              element={
+                <div className={`${mode}`}>
+                  <div className="dark:bg-black dark:text-white">
+                    <Profile />
+                  </div>
+                </div>
+              }
+            />
+            <Route
+              path="booking"
+              element={
+                <div className={`${mode}`}>
+                  <div className="dark:bg-black dark:text-white">
+                    <Booking />
+                  </div>
+                </div>
+              }
+            />
+            <Route
+              path="transport"
+              element={
+                <div className={`${mode}`}>
+                  <div className="dark:bg-black dark:text-white">
+                    <Transport />
+                  </div>
+                </div>
+              }
+            />
+          </Route>
         </Routes>
       </ConfigProvider>
     </div>

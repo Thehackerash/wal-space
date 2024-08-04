@@ -12,7 +12,7 @@ const ErrorPage: React.FC<ErrorProps> = (props): JSX.Element => {
       subTitle="Sorry, something went wrong."
       extra={
         <Button type="primary" className="bg-blue-600">
-          <Link to={`/my-chatbots`}>Back Home</Link>
+          <Link to={`/dashboard`}>Back Home</Link>
         </Button>
       }
     />
