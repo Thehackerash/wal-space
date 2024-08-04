@@ -11,6 +11,9 @@ import Logout from "./pages/logout/page";
 import Profile from "./pages/dashboard/profile/page";
 import Booking from "./pages/dashboard/booking/page";
 import Transport from "./pages/dashboard/transport/page";
+import Booking1 from "./pages/dashboard/booking/1/page";
+import Booking2 from "./pages/dashboard/booking/2/page";
+import Booking3 from "./pages/dashboard/booking/3/page";
 function App() {
   const navigate = useNavigate();
   const accessToken = Cookies.get("accessToken");
@@ -127,7 +130,38 @@ function App() {
                   </div>
                 </div>
               }
-            />
+            >
+              <Route
+                path="1"
+                element={
+                  <div className={`${mode}`}>
+                    <div className="dark:bg-black dark:text-white">
+                      <Booking1 />
+                    </div>
+                  </div>
+                }
+              />
+              <Route
+                path="2"
+                element={
+                  <div className={`${mode}`}>
+                    <div className="dark:bg-black dark:text-white">
+                      <Booking2 />
+                    </div>
+                  </div>
+                }
+              />
+              <Route
+                path="3"
+                element={
+                  <div className={`${mode}`}>
+                    <div className="dark:bg-black dark:text-white">
+                      <Booking3 />
+                    </div>
+                  </div>
+                }
+              />
+            </Route>
             <Route
               path="transport"
               element={

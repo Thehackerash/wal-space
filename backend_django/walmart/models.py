@@ -37,6 +37,8 @@ class Warehouse(models.Model):
         ],
         default="operational",
     )
+    def __str__(self):
+        return self.name
 
 
 class Inventory(models.Model):
@@ -64,6 +66,8 @@ class Truck(models.Model):
         ],
         default="waiting",
     )
+    def __str__(self):
+        return self.license_plate
 
 
 class ParkingRecord(models.Model):

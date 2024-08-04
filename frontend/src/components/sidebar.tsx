@@ -29,7 +29,7 @@ const sidebar = () => {
         <CgProfile className=" mr-2 w-6 h-6" /> Profile
       </div>
       <div
-         className={`px-5 py-2 flex justify-center hover:bg-blue-300  mx-2 rounded-lg mb-2 cursor-pointer ${
+        className={`px-5 py-2 flex justify-center hover:bg-blue-300  mx-2 rounded-lg mb-2 cursor-pointer ${
           isActive("/dashboard/transport") ? "bg-blue-300" : ""
         }`}
         onClick={() => {
@@ -40,7 +40,9 @@ const sidebar = () => {
       </div>
       <div
         className={`px-5 py-2 flex justify-center hover:bg-blue-300 rounded-lg mb-2 mx-2 cursor-pointer ${
-          isActive("/dashboard/booking") ? "bg-blue-300" : ""
+          window.location.pathname.startsWith("/dashboard/booking")
+            ? "bg-blue-300"
+            : ""
         }`}
         onClick={() => {
           navigate("/dashboard/booking");

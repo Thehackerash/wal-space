@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Driver, Truck, ParkingRecord
+from .models import Driver, Truck, ParkingRecord, Warehouse
 
 
 class DriverSerializer(ModelSerializer):
@@ -17,4 +17,10 @@ class TruckSerializer(ModelSerializer):
 class ParkingRecordSerializer(ModelSerializer):
     class Meta:
         model = ParkingRecord
+        fields = "__all__"
+
+
+class WarehouseSerializer(ModelSerializer):
+    class Meta:
+        model = Warehouse
         fields = "__all__"
