@@ -6,7 +6,7 @@ from .serializers import (
     ParkingRecordSerializer,
     WarehouseSerializer,
 )
-from .models import Driver, Truck, ParkingRecord, Warehouse
+from .models import Driver, Truck, ParkingRecord, Warehouse, ParkingLot
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics
@@ -42,10 +42,29 @@ class TruckDetailAPI(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TruckSerializer
 
 
-class ParkingRecordAPI(generics.ListCreateAPIView):
+class ParkingRecordAPI(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = ParkingRecord.objects.all()
     serializer_class = ParkingRecordSerializer
+
+
+class ParkingRecordInsertAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        source = request.user.manager.warehouse_id
+        data["point_of_origin"] = source.id
+        parking_lot_available = ParkingLot.objects.filter(
+            warehouse=data["destination"], truck=None
+        )
+        data["parking_lot"] = parking_lot_available[0].id
+        print(data)
+        parking_record = ParkingRecordSerializer(data=data)
+        if parking_record.is_valid():
+            parking_record.save()
+            return Response(parking_record.data, status=201)
+        return Response(parking_record.errors, status=400)
 
 
 class BookingDetails(APIView):

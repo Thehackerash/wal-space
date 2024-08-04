@@ -8,6 +8,7 @@ from .views import (
     TruckDetailAPI,
     ParkingRecordAPI,
     BookingDetails,
+    ParkingRecordInsertAPI,
 )
 
 urlpatterns = [
@@ -18,4 +19,9 @@ urlpatterns = [
     path("truck/<int:pk>/", TruckDetailAPI.as_view(), name="truck_detail"),
     path("parking-record/", ParkingRecordAPI.as_view(), name="parking_record_list"),
     path("booking/", BookingDetails.as_view(), name="booking_details"),
+    path(
+        "parking-record/insert/",
+        ParkingRecordInsertAPI.as_view(),
+        name="parking_record_insert",
+    ),
 ]
