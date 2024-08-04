@@ -41,4 +41,3 @@ class ParkingRecordAPI(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = ParkingRecord.objects.all()
     serializer_class = ParkingRecordSerializer
-

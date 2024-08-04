@@ -21,19 +21,13 @@ const Page: React.FC = () => {
       );
 
       if (response.status === 200) {
-        if (response.data.is_verified === false) {
-          message.info("Please verify your email address");
-          Cookies.set("emailToken", response.data.email_verification_token);
-          navigate("/verify-email/otp");
-          return;
-        }
         const { access, refresh } = response.data;
         Cookies.set("accessToken", access, { expires: 1 });
         Cookies.set("refreshToken", refresh, { expires: 7 });
         Cookies.set("username", values.username, { expires: 7 });
         setLoading(false);
         message.success("Signin successfull");
-        navigate("/onboarding");
+        navigate("/dashboard");
       } else {
         setLoading(false);
         message.error("Wrong credentials");
