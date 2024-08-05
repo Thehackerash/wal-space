@@ -74,17 +74,13 @@ class ParkingRecord(models.Model):
     truck_id = models.ForeignKey(Truck, on_delete=models.CASCADE)
     driver_id = models.ForeignKey(Driver, on_delete=models.CASCADE)
     expected_arrival_time = models.DateTimeField(default=timezone.now)
-    arrival_time = models.DateTimeField(default=timezone.now)
+    arrival_time = models.DateTimeField(null=True, blank=True)
     departure_time = models.DateTimeField(null=True, blank=True)
     parking_lot = models.ForeignKey("ParkingLot", on_delete=models.CASCADE)
     weight = models.IntegerField(null=False, blank=False)
     price = models.IntegerField(null=False, blank=False)
-    point_of_origin = models.ForeignKey(
-        Warehouse, on_delete=models.CASCADE, related_name="origin_records"
-    )
-    destination = models.ForeignKey(
-        Warehouse, on_delete=models.CASCADE, related_name="destination_records"
-    )
+    source = models.CharField(max_length=255, null=False, blank=False)
+    destination = models.CharField(max_length=255, null=False, blank=False)
 
 
 class ParkingLot(models.Model):

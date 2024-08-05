@@ -14,6 +14,12 @@ from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
+import json
+import qrcode
+import base64
+from Crypto.Cipher import AES
+from io import BytesIO
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 def home(request):
@@ -116,4 +122,55 @@ class TravelTime(View):
 
 class QR_code(View):
     def post(self, request):
-        pass
+        try:
+            data = json.loads(request.body)
+
+            truck = Truck.objects.get(id=data['truck_id'])
+            driver = Driver.objects.get(id=data['driver_id'])
+            parking_lot = ParkingLot.objects.get(id=data['parking_lot'])
+
+            record = ParkingRecord(
+                truck_id=truck,
+                driver_id=driver,
+                expected_arrival_time=data['expected_arrival_time'],
+                arrival_time=data['arrival_time'],
+                departure_time=data.get('departure_time'),
+                parking_lot=parking_lot,
+                weight=data['weight'],
+                price=data['price'],
+                point_of_origin=data['source'],
+                destination=data['destination']
+            )
+
+            # Save the record to the database
+            record.save()
+
+            # Encrypt the data
+            key = b'Sixteen byte key'  # Key must be 16, 24, or 32 bytes long
+            cipher = AES.new(key, AES.MODE_EAX)
+            nonce = cipher.nonce
+            encrypted_data, tag = cipher.encrypt_and_digest(json.dumps(data).encode())
+
+            # Generate QR code
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(base64.b64encode(encrypted_data).decode('utf-8'))
+            qr.make(fit=True)
+            img = qr.make_image(fill='black', back_color='white')
+
+            buffer = BytesIO()
+            img.save(buffer)
+            qr_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+            return JsonResponse({'status': 'success', 'qr_code': qr_image})
+
+        except KeyError as e:
+            return JsonResponse({'status': 'error', 'message': f'Missing key: {str(e)}'}, status=400)
+        except ObjectDoesNotExist as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
