@@ -9,7 +9,7 @@ from .serializers import (
     WarehouseSerializer,
 )
 from .models import User, Driver, Truck, ParkingRecord, Warehouse, ParkingLot
-from rest_framework.views import APIView
+from rest_framework.views import APIView, View
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -109,3 +109,11 @@ class ManagerAPI(APIView):
         }
         print(user_details)
         return JsonResponse(user_details)
+
+class TravelTime(View):
+    def get(self, request, *args, **kwargs):
+        pass
+
+class QR_code(View):
+    def post(self, request):
+        pass
