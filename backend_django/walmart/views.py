@@ -121,6 +121,8 @@ class TravelTime(View):
         pass
 
 class QR_code(View):
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request):
         try:
             data = json.loads(request.body)
@@ -133,8 +135,6 @@ class QR_code(View):
                 truck_id=truck,
                 driver_id=driver,
                 expected_arrival_time=data['expected_arrival_time'],
-                arrival_time=data['arrival_time'],
-                departure_time=data.get('departure_time'),
                 parking_lot=parking_lot,
                 weight=data['weight'],
                 price=data['price'],

@@ -10,6 +10,7 @@ from .views import (
     ParkingRecordAPI,
     BookingDetails,
     ParkingRecordInsertAPI,
+    QR_code,
 )
 
 urlpatterns = [
@@ -26,4 +27,5 @@ urlpatterns = [
         ParkingRecordInsertAPI.as_view(),
         name="parking_record_insert",
     ),
+    path("record/", QR_code.as_view(), name="booking_details"),
 ]
