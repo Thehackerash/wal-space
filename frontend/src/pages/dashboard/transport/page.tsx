@@ -6,25 +6,53 @@ const Page = () => {
   const token = Cookies.get("accessToken");
 
   const [driverName, setDriverName] = useState("");
+  const [contact, setContact] = useState("");
+  const [licenseId, setlicenseId] = useState("");
   const [truckLicense, setTruckLicense] = useState("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const [country, setCountry] = useState("");
 
-  const handleAddDriver = (e) => {
+  const handleAddDriver = async (e) => {
     e.preventDefault();
-    // Add driver logic here
-    console.log("Adding driver:", driverName);
+    const token = Cookies.get("accessToken");
+    try {
+      const response = await axios.post("http://localhost:8000/api/drivers/", {
+        name: driverName,
+        contact: contact,
+        license_id: licenseId,
+        street: street,
+        city: city,
+        state: state,
+        zip_code: zipCode,
+        country: country
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('Driver created successfully:', response.data);
+    } catch (error) {
+      console.error('Error creating driver:', error);
+    }
   };
 
-  const handleAddTruck = (e) => {
+  const handleAddTruck = async (e) => {
     e.preventDefault();
-    axios.post("http://localhost:8000/api/truck", {
-      license: truckLicense,
-    }, 
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    console.log("Adding truck:", truckLicense);
+    try {
+      const response = await axios.post("http://localhost:8000/api/trucks/", {
+        license: truckLicense,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("Truck created successfully:", response.data);
+    } catch (error) {
+      console.error('Error creating truck:', error);
+    }
   };
 
   return (
@@ -44,6 +72,97 @@ const Page = () => {
                 id="driverName"
                 value={driverName}
                 onChange={(e) => setDriverName(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="contact" className="block text-lg font-medium text-gray-700">
+                Driver Contact
+              </label>
+              <input
+                type="text"
+                id="contact"
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="licenseId" className="block text-lg font-medium text-gray-700">
+                Driver LicenseId
+              </label>
+              <input
+                type="text"
+                id="licenseId"
+                value={licenseId}
+                onChange={(e) => setlicenseId(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="street" className="block text-lg font-medium text-gray-700">
+                Street
+              </label>
+              <input
+                type="text"
+                id="street"
+                value={street}
+                onChange={(e) => setStreet(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="city" className="block text-lg font-medium text-gray-700">
+                City
+              </label>
+              <input
+                type="text"
+                id="city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="state" className="block text-lg font-medium text-gray-700">
+                State
+              </label>
+              <input
+                type="text"
+                id="state"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="zipCode" className="block text-lg font-medium text-gray-700">
+                Zip Code
+              </label>
+              <input
+                type="text"
+                id="zipCode"
+                value={zipCode}
+                onChange={(e) => setZipCode(e.target.value)}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="country" className="block text-lg font-medium text-gray-700">
+                Country
+              </label>
+              <input
+                type="text"
+                id="country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 required
               />

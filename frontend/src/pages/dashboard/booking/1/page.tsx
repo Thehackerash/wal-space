@@ -7,9 +7,11 @@ import Cookies from "js-cookie";
 const page = () => {
   const token = Cookies.get("accessToken");
   const navigate = useNavigate();
+  
   const [trucks, setTrucks] = useState([]);
   const [drivers, setDrivers] = useState([]);
   const [destinations, setDestinations] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
