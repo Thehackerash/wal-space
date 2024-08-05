@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 
 
 class Driver(models.Model):
@@ -92,6 +93,9 @@ class ParkingLot(models.Model):
         null=True,
     )
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
+    booked_times = ArrayField(
+        models.DateTimeField(), default=list, blank=True
+    )
 
 
 class Manager(models.Model):

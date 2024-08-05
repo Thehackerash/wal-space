@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
+import { message } from "antd";
 
 const Page = () => {
   const token = Cookies.get("accessToken");
@@ -15,7 +16,7 @@ const Page = () => {
   const [zipCode, setZipCode] = useState("");
   const [country, setCountry] = useState("");
 
-  const handleAddDriver = async (e) => {
+  const handleAddDriver = async (e:any) => {
     e.preventDefault();
     const token = Cookies.get("accessToken");
     try {
@@ -34,12 +35,23 @@ const Page = () => {
         },
       });
       console.log('Driver created successfully:', response.data);
+      if(response.status === 201){
+        message.success("driver added successfully");
+        setState("");
+        setCity("");
+        setStreet("");
+        setContact("");
+        setDriverName("");
+        setZipCode("");
+        setTruckLicense("");
+        setCountry("");
+      }
     } catch (error) {
       console.error('Error creating driver:', error);
     }
   };
 
-  const handleAddTruck = async (e) => {
+  const handleAddTruck = async (e:any) => {
     e.preventDefault();
     try {
       const response = await axios.post("http://localhost:8000/api/trucks/", {

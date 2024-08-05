@@ -13,6 +13,7 @@ from rest_framework.views import APIView, View
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from .utils import assign_parking_lot 
 
 import json
 import qrcode
@@ -122,23 +123,19 @@ class TravelTime(View):
 
 class QR_code(View):
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request):
         try:
             data = json.loads(request.body)
-
-            truck = Truck.objects.get(id=data['truck_id'])
-            driver = Driver.objects.get(id=data['driver_id'])
-            parking_lot = ParkingLot.objects.get(id=data['parking_lot'])
-
+            parking_lot_id = assign_parking_lot()
             record = ParkingRecord(
-                truck_id=truck,
-                driver_id=driver,
+                truck_id=Truck.objects.get(id=data['truck_id']),
+                driver_id=Driver.objects.get(id=data['driver_id']),
                 expected_arrival_time=data['expected_arrival_time'],
-                parking_lot=parking_lot,
+                parking_lot=ParkingLot.objects.get(id=parking_lot_id),
                 weight=data['weight'],
                 price=data['price'],
-                point_of_origin=data['source'],
+                source=data['source'],
                 destination=data['destination']
             )
 

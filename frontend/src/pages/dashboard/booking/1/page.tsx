@@ -1,16 +1,17 @@
-import { Button, Form, FormProps, InputNumber, message, Select } from "antd";
+import { Button, Form, FormProps, Input, InputNumber, message } from "antd";
 import axios from "axios";
 import { backend_url } from "../../../../utils/link";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
+
 const page = () => {
   const token = Cookies.get("accessToken");
   const navigate = useNavigate();
-  
+
   const [trucks, setTrucks] = useState([]);
   const [drivers, setDrivers] = useState([]);
-  const [destinations, setDestinations] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,8 +22,7 @@ const page = () => {
           },
         });
         console.log(response);
-        // setTrucks(response.data);
-        setDestinations(response.data.booking);
+        setWarehouses(response.data.booking);
         setTrucks(response.data.truck);
         setDrivers(response.data.driver);
       } catch (error) {
@@ -32,16 +32,21 @@ const page = () => {
 
     fetchData();
   }, []);
+
   const onFinish: FormProps<any>["onFinish"] = async (values) => {
     console.log("Success:", values);
     try {
       const response = await axios.post(
-        `${backend_url}/api/parking-record/insert/`,
+        `${backend_url}/api/record/`,
         {
-          truck_id: values.Truck,
+          truck_id: values.truck,
           driver_id: values.driver,
           destination: values.destination,
           weight: values.weight,
+          expected_arrival_time: values.expected_arrival_time,
+          parking_lot: values.parking_lot,
+          price: values.price,
+          point_of_origin: values.source,
         },
         {
           headers: {
@@ -63,6 +68,22 @@ const page = () => {
     console.log("Failed:", errorInfo);
   };
 
+  const handleSourceChange = (e:any) => {
+    const form = e.target.form;
+    const destination = form.elements.destination;
+    if (e.target.value === "warehouse") {
+      destination.value = "";
+    }
+  };
+
+  const handleDestinationChange = (e:any) => {
+    const form = e.target.form;
+    const source = form.elements.source;
+    if (e.target.value === "warehouse") {
+      source.value = "";
+    }
+  };
+
   return (
     <div>
       <Form
@@ -78,55 +99,27 @@ const page = () => {
         <Form.Item
           label="Destination"
           name="destination"
-          rules={[{ required: true, message: "Please input your username!" }]}
+          rules={[{ required: true, message: "Please input the destination!" }]}
         >
-          <Select
-            showSearch
-            placeholder="Select the destination"
-            filterOption={(input, option) =>
-              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-            }
-            options={destinations.map((destination: any) => ({
-              value: destination?.id,
-              label: destination?.name,
-            }))}
-          />
+          <Input onChange={handleDestinationChange} />
         </Form.Item>
 
         <Form.Item
           label="Driver"
           name="driver"
-          rules={[{ required: true, message: "Please select a driver!" }]}
+          rules={[{ required: true, message: "Please input the driver!" }]}
         >
-          <Select
-            showSearch
-            placeholder="Select the driver"
-            filterOption={(input, option) =>
-              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-            }
-            options={drivers.map((driver: any) => ({
-              value: driver?.id,
-              label: driver?.name,
-            }))}
-          />
+          <Input />
         </Form.Item>
+
         <Form.Item
           label="Truck"
-          name="Truck"
-          rules={[{ required: true, message: "Please select a truck" }]}
+          name="truck"
+          rules={[{ required: true, message: "Please input the truck!" }]}
         >
-          <Select
-            showSearch
-            placeholder="Select the truck"
-            filterOption={(input, option) =>
-              (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
-            }
-            options={trucks.map((truck: any) => ({
-              value: truck?.id,
-              label: truck?.license_plate,
-            }))}
-          />
+          <Input />
         </Form.Item>
+
         <Form.Item
           label="Weight"
           name="weight"
@@ -137,6 +130,39 @@ const page = () => {
         >
           <InputNumber />
         </Form.Item>
+
+        <Form.Item
+          label="Expected Arrival Time"
+          name="expected_arrival_time"
+          rules={[{ required: true, message: "Please input the arrival time!" }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Parking Lot"
+          name="parking_lot"
+          rules={[{ required: true, message: "Please input the parking lot!" }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Price"
+          name="price"
+          rules={[{ required: true, message: "Please input the price!" }]}
+        >
+          <InputNumber />
+        </Form.Item>
+
+        <Form.Item
+          label="Source"
+          name="source"
+          rules={[{ required: true, message: "Please input the source!" }]}
+        >
+          <Input onChange={handleSourceChange} />
+        </Form.Item>
+
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
           <Button type="primary" htmlType="submit">
             Submit
