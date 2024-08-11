@@ -1,17 +1,28 @@
-import { Button, Form, FormProps, Input, InputNumber, message } from "antd";
+import {
+  Button,
+  Form,
+  FormProps,
+  Input,
+  InputNumber,
+  message,
+  Select,
+} from "antd";
 import axios from "axios";
 import { backend_url } from "../../../../utils/link";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 
-const page = () => {
+const Page = () => {
   const token = Cookies.get("accessToken");
   const navigate = useNavigate();
+  const [form] = Form.useForm();
 
-  const [trucks, setTrucks] = useState([]);
-  const [drivers, setDrivers] = useState([]);
+  const [trucks, setTrucks] = useState<any>([]);
+  const [drivers, setDrivers] = useState<any>([]);
   const [warehouses, setWarehouses] = useState([]);
+  const [managerWarehouse, setManagerWarehouse] = useState<any>(null);
+  const [path, setPath] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,6 +36,7 @@ const page = () => {
         setWarehouses(response.data.booking);
         setTrucks(response.data.truck);
         setDrivers(response.data.driver);
+        setManagerWarehouse(response.data.warehouse); // Assuming warehouse is an object with details
       } catch (error) {
         console.error(error);
       }
@@ -36,17 +48,21 @@ const page = () => {
   const onFinish: FormProps<any>["onFinish"] = async (values) => {
     console.log("Success:", values);
     try {
+      const source = path === "incoming" ? values.source : managerWarehouse?.id;
+      const destination =
+        path === "incoming" ? managerWarehouse.id : values.destination;
+
       const response = await axios.post(
         `${backend_url}/api/record/`,
         {
           truck_id: values.truck,
           driver_id: values.driver,
-          destination: values.destination,
+          destination: destination,
           weight: values.weight,
           expected_arrival_time: values.expected_arrival_time,
           parking_lot: values.parking_lot,
           price: values.price,
-          point_of_origin: values.source,
+          point_of_origin: source,
         },
         {
           headers: {
@@ -61,6 +77,7 @@ const page = () => {
       }
     } catch (error) {
       console.error(error);
+      message.error("Booking failed!");
     }
   };
 
@@ -68,26 +85,15 @@ const page = () => {
     console.log("Failed:", errorInfo);
   };
 
-  const handleSourceChange = (e:any) => {
-    const form = e.target.form;
-    const destination = form.elements.destination;
-    if (e.target.value === "warehouse") {
-      destination.value = "";
-    }
-  };
-
-  const handleDestinationChange = (e:any) => {
-    const form = e.target.form;
-    const source = form.elements.source;
-    if (e.target.value === "warehouse") {
-      source.value = "";
-    }
+  const handlePathChange = (value: any) => {
+    setPath(value);
   };
 
   return (
     <div>
       <Form
         name="basic"
+        form={form}
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
         style={{ maxWidth: 600 }}
@@ -97,19 +103,61 @@ const page = () => {
         autoComplete="off"
       >
         <Form.Item
-          label="Destination"
-          name="destination"
-          rules={[{ required: true, message: "Please input the destination!" }]}
+          label="Path"
+          name="path"
+          rules={[{ required: true, message: "Please select the path!" }]}
         >
-          <Input onChange={handleDestinationChange} />
+          <Select onChange={handlePathChange}>
+            <Select.Option value="incoming">Incoming</Select.Option>
+            <Select.Option value="outgoing">Outgoing</Select.Option>
+          </Select>
         </Form.Item>
 
+        {path === "incoming" && (
+          <Form.Item
+            label="Source"
+            name="source"
+            rules={[{ required: true, message: "Please input the source!" }]}
+          >
+            <Input />
+          </Form.Item>
+        )}
+
+        {path === "outgoing" && managerWarehouse && (
+          <Form.Item
+            label="Source"
+            name="source"
+            initialValue={managerWarehouse.name}
+          >
+            <Input disabled />
+          </Form.Item>
+        )}
+        {path === "incoming" && managerWarehouse && (
+          <Form.Item
+            label="Destination"
+            name="destination"
+            initialValue={managerWarehouse.name}
+          >
+            <Input disabled />
+          </Form.Item>
+        )}
+        {path === "outgoing" && managerWarehouse && (
+          <Form.Item label="Destination" name="destination">
+            <Input />
+          </Form.Item>
+        )}
         <Form.Item
           label="Driver"
           name="driver"
           rules={[{ required: true, message: "Please input the driver!" }]}
         >
-          <Input />
+          <Select>
+            {drivers.map((driver: any) => (
+              <Select.Option key={driver.id} value={driver.id}>
+                {driver.name}
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
 
         <Form.Item
@@ -117,7 +165,13 @@ const page = () => {
           name="truck"
           rules={[{ required: true, message: "Please input the truck!" }]}
         >
-          <Input />
+          <Select>
+            {trucks.map((truck: any) => (
+              <Select.Option key={truck.id} value={truck.id}>
+                {truck.name}
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
 
         <Form.Item
@@ -134,7 +188,9 @@ const page = () => {
         <Form.Item
           label="Expected Arrival Time"
           name="expected_arrival_time"
-          rules={[{ required: true, message: "Please input the arrival time!" }]}
+          rules={[
+            { required: true, message: "Please input the arrival time!" },
+          ]}
         >
           <Input />
         </Form.Item>
@@ -155,14 +211,6 @@ const page = () => {
           <InputNumber />
         </Form.Item>
 
-        <Form.Item
-          label="Source"
-          name="source"
-          rules={[{ required: true, message: "Please input the source!" }]}
-        >
-          <Input onChange={handleSourceChange} />
-        </Form.Item>
-
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
           <Button type="primary" htmlType="submit">
             Submit
@@ -173,4 +221,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

@@ -8,12 +8,12 @@ from .serializers import (
     ParkingRecordSerializer,
     WarehouseSerializer,
 )
-from .models import User, Driver, Truck, ParkingRecord, Warehouse, ParkingLot
+from .models import User, Driver, Truck, ParkingRecord, Warehouse, ParkingLot, Manager
 from rest_framework.views import APIView, View
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from .utils import assign_parking_lot 
+from .utils import assign_parking_lot
 
 import json
 import qrcode
@@ -22,9 +22,11 @@ from Crypto.Cipher import AES
 from io import BytesIO
 from django.core.exceptions import ObjectDoesNotExist
 
+
 # Create your views here.
 def home(request):
     return HttpResponse("Hello, World!")
+
 
 class DriverAPI(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -55,13 +57,14 @@ class ParkingRecordAPI(generics.ListAPIView):
     queryset = ParkingRecord.objects.all()
     serializer_class = ParkingRecordSerializer
 
+
 class AddTruck(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         data = request.data
         truck = TruckSerializer(data=data)
-        
+
 
 class ParkingRecordInsertAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -87,7 +90,10 @@ class BookingDetails(APIView):
 
     def get(self, request):
         user = self.request.user
-        warehouse_id = user.manager.warehouse_id.id
+        manager = Manager.objects.get(user=user)
+        warehouse = manager.warehouse_id
+        warehouse = WarehouseSerializer(warehouse).data
+        warehouse_id = manager.warehouse_id.id
         destination = Warehouse.objects.all().exclude(id=warehouse_id)
         destination = WarehouseSerializer(destination, many=True).data
         truck = Truck.objects.all()
@@ -97,9 +103,11 @@ class BookingDetails(APIView):
                 "booking": destination,
                 "driver": DriverSerializer(driver, many=True).data,
                 "truck": TruckSerializer(truck, many=True).data,
+                "warehouse": warehouse,
             },
             status=200,
         )
+
 
 class ManagerAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -109,17 +117,19 @@ class ManagerAPI(APIView):
         user = get_object_or_404(User, username=username)
         print(user)
         user_details = {
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
+            "username": user.username,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
         }
         print(user_details)
         return JsonResponse(user_details)
 
+
 class TravelTime(View):
     def get(self, request, *args, **kwargs):
         pass
+
 
 class QR_code(View):
     permission_classes = [IsAuthenticated]
@@ -129,21 +139,21 @@ class QR_code(View):
             data = json.loads(request.body)
             parking_lot_id = assign_parking_lot()
             record = ParkingRecord(
-                truck_id=Truck.objects.get(id=data['truck_id']),
-                driver_id=Driver.objects.get(id=data['driver_id']),
-                expected_arrival_time=data['expected_arrival_time'],
+                truck_id=Truck.objects.get(id=data["truck_id"]),
+                driver_id=Driver.objects.get(id=data["driver_id"]),
+                expected_arrival_time=data["expected_arrival_time"],
                 parking_lot=ParkingLot.objects.get(id=parking_lot_id),
-                weight=data['weight'],
-                price=data['price'],
-                source=data['source'],
-                destination=data['destination']
+                weight=data["weight"],
+                price=data["price"],
+                source=data["source"],
+                destination=data["destination"],
             )
 
             # Save the record to the database
             record.save()
 
             # Encrypt the data
-            key = b'Sixteen byte key'  # Key must be 16, 24, or 32 bytes long
+            key = b"Sixteen byte key"  # Key must be 16, 24, or 32 bytes long
             cipher = AES.new(key, AES.MODE_EAX)
             nonce = cipher.nonce
             encrypted_data, tag = cipher.encrypt_and_digest(json.dumps(data).encode())
@@ -155,19 +165,21 @@ class QR_code(View):
                 box_size=10,
                 border=4,
             )
-            qr.add_data(base64.b64encode(encrypted_data).decode('utf-8'))
+            qr.add_data(base64.b64encode(encrypted_data).decode("utf-8"))
             qr.make(fit=True)
-            img = qr.make_image(fill='black', back_color='white')
+            img = qr.make_image(fill="black", back_color="white")
 
             buffer = BytesIO()
             img.save(buffer)
-            qr_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            qr_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-            return JsonResponse({'status': 'success', 'qr_code': qr_image})
+            return JsonResponse({"status": "success", "qr_code": qr_image})
 
         except KeyError as e:
-            return JsonResponse({'status': 'error', 'message': f'Missing key: {str(e)}'}, status=400)
+            return JsonResponse(
+                {"status": "error", "message": f"Missing key: {str(e)}"}, status=400
+            )
         except ObjectDoesNotExist as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)

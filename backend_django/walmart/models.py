@@ -93,9 +93,6 @@ class ParkingLot(models.Model):
         null=True,
     )
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
-    booked_times = ArrayField(
-        models.DateTimeField(), default=list, blank=True
-    )
 
 
 class Manager(models.Model):

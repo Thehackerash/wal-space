@@ -14,7 +14,7 @@ const page = () => {
 
         return (
           <div>
-          <DeckGL
+          {/* <DeckGL
             style={{ width: "100vw", height: "100vh", overflow: "hidden" }}
             viewState={viewState}
             onViewStateChange={({ viewState }:any) => setViewState(viewState)}
@@ -29,7 +29,7 @@ const page = () => {
                 return { url, resourceType };
               }}
             />
-          </DeckGL>
+          </DeckGL> */}
         </div>
         );
 };
