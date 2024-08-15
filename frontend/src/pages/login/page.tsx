@@ -27,7 +27,7 @@ const Page: React.FC = () => {
         Cookies.set("username", values.username, { expires: 7 });
         setLoading(false);
         message.success("Signin successfull");
-        navigate("/dashboard");
+        navigate("/dashboard/profile");
       } else {
         setLoading(false);
         message.error("Wrong credentials");

@@ -21,7 +21,7 @@ function App() {
   useEffect(() => {
     if (!accessToken) {
       if (
-        window.location.pathname === "/" ||
+        // window.location.pathname === "/" ||
         window.location.pathname === "/404" ||
         window.location.pathname === "/logout"
       ) {
