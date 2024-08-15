@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .utils import assign_parking_lot
-
+from django.views.decorators.csrf import csrf_exempt
 import json
 import qrcode
 import base64
@@ -68,15 +68,17 @@ class AddTruck(APIView):
 
 class ParkingRecordInsertAPI(APIView):
     permission_classes = [IsAuthenticated]
-
+    @csrf_exempt
     def post(self, request):
         data = request.data
         source = request.user.manager.warehouse_id
-        data["point_of_origin"] = source.id
-        parking_lot_available = ParkingLot.objects.filter(
-            warehouse=data["destination"], truck=None
-        )
-        data["parking_lot"] = parking_lot_available[0].id
+        # data["point_of_origin"] = source.id
+        # parking_lot_available = ParkingLot.objects.filter(
+        #     warehouse=data["destination"], truck=None
+        # )
+        # data["parking_lot"] = parking_lot_available[0].
+        parking_lot=ParkingLot.objects.filter(warehouse=data["destination"], truck=None).first()
+        data["parking_lot"] = parking_lot.id
         print(data)
         parking_record = ParkingRecordSerializer(data=data)
         if parking_record.is_valid():

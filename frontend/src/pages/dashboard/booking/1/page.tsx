@@ -6,17 +6,18 @@ import {
   InputNumber,
   message,
   Select,
+  TimePicker,
 } from "antd";
 import axios from "axios";
 import { backend_url } from "../../../../utils/link";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-
+import dayjs from "dayjs";
 const Page = () => {
   const token = Cookies.get("accessToken");
   const navigate = useNavigate();
-  const [form] = Form.useForm();
+  // const [form] = Form.useForm();
 
   const [trucks, setTrucks] = useState<any>([]);
   const [drivers, setDrivers] = useState<any>([]);
@@ -44,7 +45,7 @@ const Page = () => {
 
     fetchData();
   }, []);
-
+const csrfToken = Cookies.get("csrftoken");
   const onFinish: FormProps<any>["onFinish"] = async (values) => {
     console.log("Success:", values);
     try {
@@ -53,20 +54,20 @@ const Page = () => {
         path === "incoming" ? managerWarehouse.id : values.destination;
 
       const response = await axios.post(
-        `${backend_url}/api/record/`,
+        `${backend_url}/api/parking-record/insert/`,
         {
           truck_id: values.truck,
           driver_id: values.driver,
           destination: destination,
           weight: values.weight,
           expected_arrival_time: values.expected_arrival_time,
-          parking_lot: values.parking_lot,
           price: values.price,
-          point_of_origin: source,
+          source: source,
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'X-CSRFToken': csrfToken,  
           },
         }
       );
@@ -93,7 +94,7 @@ const Page = () => {
     <div>
       <Form
         name="basic"
-        form={form}
+        // form={form}
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
         style={{ maxWidth: 600 }}
@@ -192,15 +193,7 @@ const Page = () => {
             { required: true, message: "Please input the arrival time!" },
           ]}
         >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          label="Parking Lot"
-          name="parking_lot"
-          rules={[{ required: true, message: "Please input the parking lot!" }]}
-        >
-          <Input />
+       <TimePicker defaultOpenValue={dayjs('00:00:00', 'HH:mm:ss')} />
         </Form.Item>
 
         <Form.Item
