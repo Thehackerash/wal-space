@@ -21,7 +21,7 @@ import base64
 from Crypto.Cipher import AES
 from io import BytesIO
 from django.core.exceptions import ObjectDoesNotExist
-
+from .s3_settings import *
 
 # Create your views here.
 def home(request):
@@ -86,9 +86,14 @@ class ParkingRecordInsertAPI(APIView):
         buffer = BytesIO()
         img.save(buffer, format="PNG")
         qr_image = buffer.getvalue()
+        buffer.seek(0)
+        
+        print("uploading")
+        qr_image_url = upload_img(buffer, f"{data['driver_id']}.png")
+        print("uploaded")
+
         buffer.close()
 
-        qr_image_base64 = base64.b64encode(qr_image).decode("utf-8")
         in_out = data["in_out"]
         in_out = "destination" if in_out == "incoming" else "source"
         parking_lot = ParkingLot.objects.filter(
@@ -100,7 +105,7 @@ class ParkingRecordInsertAPI(APIView):
 
         if parking_record.is_valid():
             parking_record.save()
-            custom_payload = {"qr_code": qr_image_base64, "data": parking_record.data}
+            custom_payload = {"qr_code_url": qr_image_url, "data": parking_record.data}
             truck = Truck.objects.get(id=data["truck_id"])
             truck.status = in_out
             truck.save()
