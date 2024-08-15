@@ -73,25 +73,6 @@ class ParkingRecordInsertAPI(APIView):
     def post(self, request):
         data = request.data
         source = request.user.manager.warehouse_id
-        # data["point_of_origin"] = source.id
-        # parking_lot_available = ParkingLot.objects.filter(
-        #     warehouse=data["destination"], truck=None
-        # )
-        # data["parking_lot"] = parking_lot_available[0].
-
-        # qr code generation
-        # parking_lot_id = assign_parking_lot()
-
-        # Save the record to the database
-        # record.save()
-
-        # # Encrypt the data
-        # key = b"Sixteen byte key"  # Key must be 16, 24, or 32 bytes long
-        # cipher = AES.new(key, AES.MODE_EAX)
-        # nonce = cipher.nonce
-        # encrypted_data, tag = cipher.encrypt_and_digest(json.dumps(data).encode())
-
-        # Generate QR code
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
