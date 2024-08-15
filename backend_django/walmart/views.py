@@ -101,6 +101,9 @@ class ParkingRecordInsertAPI(APIView):
         if parking_record.is_valid():
             parking_record.save()
             custom_payload = {"qr_code": qr_image_base64, "data": parking_record.data}
+            truck = Truck.objects.get(id=data["truck_id"])
+            truck.status = in_out
+            truck.save()
             return Response(custom_payload, status=201)
         return Response(custom_payload.errors, status=400)
 
