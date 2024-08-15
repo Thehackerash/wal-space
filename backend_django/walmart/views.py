@@ -68,6 +68,7 @@ class AddTruck(APIView):
 
 class ParkingRecordInsertAPI(APIView):
     permission_classes = [IsAuthenticated]
+
     @csrf_exempt
     def post(self, request):
         data = request.data
@@ -78,19 +79,19 @@ class ParkingRecordInsertAPI(APIView):
         # )
         # data["parking_lot"] = parking_lot_available[0].
 
-        #qr code generation
+        # qr code generation
         # parking_lot_id = assign_parking_lot()
 
-            # Save the record to the database
-            #record.save()
+        # Save the record to the database
+        # record.save()
 
-            # # Encrypt the data
-            # key = b"Sixteen byte key"  # Key must be 16, 24, or 32 bytes long
-            # cipher = AES.new(key, AES.MODE_EAX)
-            # nonce = cipher.nonce
-            # encrypted_data, tag = cipher.encrypt_and_digest(json.dumps(data).encode())
+        # # Encrypt the data
+        # key = b"Sixteen byte key"  # Key must be 16, 24, or 32 bytes long
+        # cipher = AES.new(key, AES.MODE_EAX)
+        # nonce = cipher.nonce
+        # encrypted_data, tag = cipher.encrypt_and_digest(json.dumps(data).encode())
 
-            # Generate QR code
+        # Generate QR code
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -106,22 +107,25 @@ class ParkingRecordInsertAPI(APIView):
         qr_image = buffer.getvalue()
         buffer.close()
 
-        qr_image_base64 = base64.b64encode(qr_image).decode('utf-8')
-        in_out=data["in_out"]
+        qr_image_base64 = base64.b64encode(qr_image).decode("utf-8")
+        in_out = data["in_out"]
         in_out = "destination" if in_out == "incoming" else "source"
-        parking_lot=ParkingLot.objects.filter(warehouse=data[in_out], truck=None).first()     
+        parking_lot = ParkingLot.objects.filter(
+            warehouse=data[in_out], truck=None
+        ).first()
         data["parking_lot"] = parking_lot.id
         print(data)
         parking_record = ParkingRecordSerializer(data=data)
-        
+
         if parking_record.is_valid():
             parking_record.save()
-            custom_payload = {
-                "qr_code": qr_image_base64,
-                "data": parking_record.data
-            }
+            custom_payload = {"qr_code": qr_image_base64, "data": parking_record.data}
             return Response(custom_payload, status=201)
         return Response(custom_payload.errors, status=400)
+
+
+from django.db.models import Q
+from django.db.models import OuterRef, Subquery
 
 
 class BookingDetails(APIView):
@@ -135,8 +139,23 @@ class BookingDetails(APIView):
         warehouse_id = manager.warehouse_id.id
         destination = Warehouse.objects.all().exclude(id=warehouse_id)
         destination = WarehouseSerializer(destination, many=True).data
-        truck = Truck.objects.all()
-        driver = Driver.objects.all()
+        truck = Truck.objects.filter(status="waiting")
+        drivers_no_record = Driver.objects.filter(
+            ~Q(
+                id__in=Subquery(
+                    ParkingRecord.objects.filter(driver_id=OuterRef("pk")).values(
+                        "driver_id"
+                    )
+                )
+            )
+        )
+        drivers_arrival_not_null = Driver.objects.filter(
+            Q(parkingrecord__arrival_time__isnull=False)
+        ).distinct()
+
+        driver = Driver.objects.filter(
+            Q(id__in=drivers_no_record) | Q(id__in=drivers_arrival_not_null)
+        ).distinct()
         return Response(
             {
                 "booking": destination,
@@ -189,7 +208,7 @@ class gen_qr_code(View):
             )
 
             # Save the record to the database
-            #record.save()
+            # record.save()
 
             # # Encrypt the data
             # key = b"Sixteen byte key"  # Key must be 16, 24, or 32 bytes long
@@ -213,7 +232,9 @@ class gen_qr_code(View):
             qr_image = buffer.getvalue()
             buffer.close()
             print(qr_image)
-            return JsonResponse({"status": "success", "qr_code": qr_image, "content_type": "image/png"})
+            return JsonResponse(
+                {"status": "success", "qr_code": qr_image, "content_type": "image/png"}
+            )
 
         except KeyError as e:
             return JsonResponse(
