@@ -107,8 +107,9 @@ class ParkingRecordInsertAPI(APIView):
         buffer.close()
 
         qr_image_base64 = base64.b64encode(qr_image).decode('utf-8')
-        
-        parking_lot=ParkingLot.objects.filter(warehouse=data["destination"], truck=None).first()
+        in_out=data["in_out"]
+        in_out = "destination" if in_out == "incoming" else "source"
+        parking_lot=ParkingLot.objects.filter(warehouse=data[in_out], truck=None).first()     
         data["parking_lot"] = parking_lot.id
         print(data)
         parking_record = ParkingRecordSerializer(data=data)
