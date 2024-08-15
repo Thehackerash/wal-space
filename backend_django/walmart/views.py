@@ -21,10 +21,8 @@ import base64
 from Crypto.Cipher import AES
 from io import BytesIO
 from django.core.exceptions import ObjectDoesNotExist
-from io import BytesIO
-from django.utils import timezone
-from django.conf import settings
-import os
+
+
 # Create your views here.
 def home(request):
     return HttpResponse("Hello, World!")
@@ -79,48 +77,51 @@ class ParkingRecordInsertAPI(APIView):
         #     warehouse=data["destination"], truck=None
         # )
         # data["parking_lot"] = parking_lot_available[0].
-        in_out=data["in_out"]
-        in_out = "destination" if in_out == "incoming" else "source"
-        parking_lot=ParkingLot.objects.filter(warehouse=data[in_out], truck=None).first()     
+
+        #qr code generation
+        # parking_lot_id = assign_parking_lot()
+
+            # Save the record to the database
+            #record.save()
+
+            # # Encrypt the data
+            # key = b"Sixteen byte key"  # Key must be 16, 24, or 32 bytes long
+            # cipher = AES.new(key, AES.MODE_EAX)
+            # nonce = cipher.nonce
+            # encrypted_data, tag = cipher.encrypt_and_digest(json.dumps(data).encode())
+
+            # Generate QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(data)
+        qr.make(fit=True)
+        img = qr.make_image(fill="black", back_color="white")
+
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        qr_image = buffer.getvalue()
+        buffer.close()
+
+        qr_image_base64 = base64.b64encode(qr_image).decode('utf-8')
+        
+        parking_lot=ParkingLot.objects.filter(warehouse=data["destination"], truck=None).first()
         data["parking_lot"] = parking_lot.id
         print(data)
-        
-         # Create and save the parking record
         parking_record = ParkingRecordSerializer(data=data)
+        
         if parking_record.is_valid():
             parking_record.save()
-            # Generate QR code
-            qr_data = f'ID: {parking_record.data["id"]}, Truck ID: {data["truck_id"]}, Arrival Time: {timezone.now()}'
-            qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_L,
-                box_size=10,
-                border=4,
-            )
-            qr.add_data(qr_data)
-            qr.make(fit=True)
-            img = qr.make_image(fill='black', back_color='white')
-            buffer = BytesIO()
-            img.save(buffer)
-            buffer.seek(0)
-            file_name = f'qr_code_{parking_record.data["id"]}.png'
-            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            custom_payload = {
+                "qr_code": qr_image_base64,
+                "data": parking_record.data
+            }
+            return Response(custom_payload, status=201)
+        return Response(custom_payload.errors, status=400)
 
-            # Save the QR code image
-            img.save(file_path)
-
-            # Construct the URL for accessing the QR code
-            qr_code_url = os.path.join(settings.MEDIA_URL, file_name)
-            # You can return the QR code image in the response if desired, or store it as a URL
-            response = HttpResponse(buffer, content_type='image/png')
-            response['Content-Disposition'] = 'attachment; filename="qr_code.png"'
-
-            # Return QR code URL or QR code image directly
-            return Response({
-                'parking_record': parking_record.data,
-                'qr_code_url': qr_code_url
-            }, status=201)
-        return Response(parking_record.errors, status=400)
 
 class BookingDetails(APIView):
     permission_classes = [IsAuthenticated]
@@ -168,7 +169,7 @@ class TravelTime(View):
         pass
 
 
-class QR_code(View):
+class gen_qr_code(View):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -187,13 +188,13 @@ class QR_code(View):
             )
 
             # Save the record to the database
-            record.save()
+            #record.save()
 
-            # Encrypt the data
-            key = b"Sixteen byte key"  # Key must be 16, 24, or 32 bytes long
-            cipher = AES.new(key, AES.MODE_EAX)
-            nonce = cipher.nonce
-            encrypted_data, tag = cipher.encrypt_and_digest(json.dumps(data).encode())
+            # # Encrypt the data
+            # key = b"Sixteen byte key"  # Key must be 16, 24, or 32 bytes long
+            # cipher = AES.new(key, AES.MODE_EAX)
+            # nonce = cipher.nonce
+            # encrypted_data, tag = cipher.encrypt_and_digest(json.dumps(data).encode())
 
             # Generate QR code
             qr = qrcode.QRCode(
@@ -202,15 +203,16 @@ class QR_code(View):
                 box_size=10,
                 border=4,
             )
-            qr.add_data(base64.b64encode(encrypted_data).decode("utf-8"))
+            qr.add_data(data)
             qr.make(fit=True)
             img = qr.make_image(fill="black", back_color="white")
 
             buffer = BytesIO()
-            img.save(buffer)
-            qr_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-            return JsonResponse({"status": "success", "qr_code": qr_image})
+            img.save(buffer, format="PNG")
+            qr_image = buffer.getvalue()
+            buffer.close()
+            print(qr_image)
+            return JsonResponse({"status": "success", "qr_code": qr_image, "content_type": "image/png"})
 
         except KeyError as e:
             return JsonResponse(
