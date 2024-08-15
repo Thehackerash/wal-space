@@ -21,8 +21,10 @@ import base64
 from Crypto.Cipher import AES
 from io import BytesIO
 from django.core.exceptions import ObjectDoesNotExist
-
-
+from io import BytesIO
+from django.utils import timezone
+from django.conf import settings
+import os
 # Create your views here.
 def home(request):
     return HttpResponse("Hello, World!")
@@ -77,15 +79,48 @@ class ParkingRecordInsertAPI(APIView):
         #     warehouse=data["destination"], truck=None
         # )
         # data["parking_lot"] = parking_lot_available[0].
-        parking_lot=ParkingLot.objects.filter(warehouse=data["destination"], truck=None).first()
+        in_out=data["in_out"]
+        in_out = "destination" if in_out == "incoming" else "source"
+        parking_lot=ParkingLot.objects.filter(warehouse=data[in_out], truck=None).first()     
         data["parking_lot"] = parking_lot.id
         print(data)
+        
+         # Create and save the parking record
         parking_record = ParkingRecordSerializer(data=data)
         if parking_record.is_valid():
             parking_record.save()
-            return Response(parking_record.data, status=201)
-        return Response(parking_record.errors, status=400)
+            # Generate QR code
+            qr_data = f'ID: {parking_record.data["id"]}, Truck ID: {data["truck_id"]}, Arrival Time: {timezone.now()}'
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(qr_data)
+            qr.make(fit=True)
+            img = qr.make_image(fill='black', back_color='white')
+            buffer = BytesIO()
+            img.save(buffer)
+            buffer.seek(0)
+            file_name = f'qr_code_{parking_record.data["id"]}.png'
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
 
+            # Save the QR code image
+            img.save(file_path)
+
+            # Construct the URL for accessing the QR code
+            qr_code_url = os.path.join(settings.MEDIA_URL, file_name)
+            # You can return the QR code image in the response if desired, or store it as a URL
+            response = HttpResponse(buffer, content_type='image/png')
+            response['Content-Disposition'] = 'attachment; filename="qr_code.png"'
+
+            # Return QR code URL or QR code image directly
+            return Response({
+                'parking_record': parking_record.data,
+                'qr_code_url': qr_code_url
+            }, status=201)
+        return Response(parking_record.errors, status=400)
 
 class BookingDetails(APIView):
     permission_classes = [IsAuthenticated]

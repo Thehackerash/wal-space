@@ -63,6 +63,7 @@ const csrfToken = Cookies.get("csrftoken");
           expected_arrival_time: values.expected_arrival_time,
           price: values.price,
           source: source,
+          in_out: path,
         },
         {
           headers: {

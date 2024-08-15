@@ -12,7 +12,8 @@ from .views import (
     ParkingRecordInsertAPI,
     QR_code,
 )
-
+from django.conf import settings
+from django.conf.urls.static import static
 urlpatterns = [
     path("", home, name="home"),
     path("manager/", ManagerAPI.as_view(), name="manager_list"),
@@ -29,3 +30,5 @@ urlpatterns = [
     ),
     path("record/", QR_code.as_view(), name="booking_details"),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
