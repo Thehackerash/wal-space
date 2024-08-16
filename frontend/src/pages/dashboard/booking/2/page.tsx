@@ -1,37 +1,145 @@
-import DeckGL from "@deck.gl/react";
-import StaticMap from "react-map-gl";
-import maplibregl, { NavigationControl } from "maplibre-gl";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-import "maplibre-gl/dist/maplibre-gl.css";
-import { useEffect, useState } from "react";
+import * as React from "react";
+import { useState, useEffect, useRef } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Button,
+  FormGroup,
+  Label,
+  Input,
+  Navbar,
+  NavbarBrand
+} from "reactstrap";
 
-const page = () => {
-  const [viewState, setViewState] = useState({
-    longitude: 0,
-    latitude: 0,
-    zoom: 1,
-  });
+import "@tomtom-international/web-sdk-maps/dist/maps.css";
+import * as tt from "@tomtom-international/web-sdk-maps";
+const MAX_ZOOM = 17;
 
-        return (
-          <div>
-          {/* <DeckGL
-            style={{ width: "100vw", height: "100vh", overflow: "hidden" }}
-            viewState={viewState}
-            onViewStateChange={({ viewState }:any) => setViewState(viewState)}
-            controller={true}
-            layers={[]}
-          >
-            <StaticMap
-              mapLib={maplibregl as any}
-              mapStyle="https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json"
-              transformRequest={(url, resourceType) => {
-                url = url + `?api_key=${import.meta.env.VITE_BASE_MAP_API_KEY}}`;
-                return { url, resourceType };
-              }}
+const Page = () => {
+ 
+
+  const mapElement = useRef();
+  const [mapLongitude, setMapLongitude] = useState(78.163641);
+  const [mapLatitude, setMapLatitude] = useState(27.2504854);
+  const [mapZoom, setMapZoom] = useState(13);
+  const [map, setMap] = useState({});
+  const markerRef = useRef<tt.Marker | null>(null); 
+
+  const increaseZoom = () => {
+    if (mapZoom < MAX_ZOOM) {
+      setMapZoom(mapZoom + 1);
+    }
+  };
+
+  const decreaseZoom = () => {
+    if (mapZoom > 1) {
+      setMapZoom(mapZoom - 1);
+    }
+  };
+
+  const updateMap = () => {
+    map.setCenter([parseFloat(mapLongitude), parseFloat(mapLatitude)]);
+    map.setZoom(mapZoom);
+    if (markerRef.current) {
+      markerRef.current.setLngLat([longitude, latitude]);
+    }
+  };
+
+  useEffect(() => {
+    let map = tt.map({
+      /* 
+      This key will API key only works on this Stackblitz. To use this code in your own project,
+      sign up for an API key on the TomTom Developer Portal.
+      */
+      key: "nG6oY1L34rbTfoLz0D205CrB42a3mf8m",
+      container: mapElement.current,
+      center: [mapLongitude, mapLatitude],
+      zoom: mapZoom
+    });
+
+    markerRef.current = new tt.Marker().setLngLat([mapLongitude, mapLatitude]).addTo(map);
+
+    setMap(map);
+    return () => map.remove();
+  }, []);
+
+  useEffect(() => {
+    // Initialize the map with a valid HTTPS style URL
+    map.current = tt.map({
+      key: "RfJj3m7PSpmEtNUjvnMfB6199cBz2bKX", // Your actual API key
+      container: mapElement.current,
+      center: [0, 0], // Initial map center [longitude, latitude]
+      zoom: 2,        // Initial zoom level
+      style: "https://api.tomtom.com/style/1/style/basic_main-lite.json?key=RfJj3m7PSpmEtNUjvnMfB6199cBz2bKX", // Valid style URL with your API key
+    });
+
+    return () => {
+      // Clean up the map instance on component unmount
+      if (map.current) {
+        map.current.remove();
+      }
+    };
+  }, []);
+
+  return (
+    <div className="App">
+    <Navbar dark={true} style={{ backgroundColor: "#4287f5" }}>
+      <NavbarBrand>Location to Destination</NavbarBrand>
+    </Navbar>
+    <Container className="mapContainer">
+      <Row>
+        <Col xs="4">
+          <h4>Map Controls</h4>
+          <FormGroup>
+            <Label for="longitude">Longitude</Label>
+            <Input
+              type="text"
+              name="longitude"
+              value={mapLongitude}
+              onChange={(e) => setMapLongitude(e.target.value)}
             />
-          </DeckGL> */}
-        </div>
-        );
+          </FormGroup>
+          <FormGroup>
+            <Label for="latitude">Latitude</Label>
+            <Input
+              type="text"
+              name="latitude"
+              value={mapLatitude}
+              onChange={(e) => setMapLatitude(e.target.value)}
+            />
+          </FormGroup>
+          <Col xs="12">
+            <Row>Zoom</Row>
+            <Row>
+              <Button outline color="primary" onClick={decreaseZoom}>
+                -
+              </Button>
+              <div className="mapZoomDisplay">{mapZoom}</div>
+              <Button outline color="primary" onClick={increaseZoom}>
+                +
+              </Button>
+            </Row>
+          </Col>
+          <Col xs="12">
+            <Row className="updateButton">
+              <Button color="primary" onClick={updateMap}>
+                Update Map
+              </Button>
+            </Row>
+          </Col>
+        </Col>
+        <Col xs="8">
+          <div ref={mapElement} className="mapDiv" />
+        </Col>
+      </Row>
+    </Container>
+  </div>
+  );
 };
 
-export default page
+export default Page;
+
+
