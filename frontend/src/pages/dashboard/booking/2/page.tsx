@@ -1,7 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-
-import * as React from "react";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Container,
   Row,
@@ -13,15 +11,18 @@ import {
   Navbar,
   NavbarBrand
 } from "reactstrap";
-
+import axios from "axios";
 import "@tomtom-international/web-sdk-maps/dist/maps.css";
 import * as tt from "@tomtom-international/web-sdk-maps";
 import * as ttServices from "@tomtom-international/web-sdk-services";
 
 const MAX_ZOOM = 17;
+const API_KEY = "RfJj3m7PSpmEtNUjvnMfB6199cBz2bKX"; // Your actual API key
 
 const Page = () => {
   const mapElement = useRef(null);
+  const [sourceAddress, setSourceAddress] = useState("");
+  const [destinationAddress, setDestinationAddress] = useState("");
   const [mapLongitude, setMapLongitude] = useState(78.163641);
   const [mapLatitude, setMapLatitude] = useState(27.2504854);
   const [destinationLongitude, setDestinationLongitude] = useState(78.047);
@@ -55,8 +56,7 @@ const Page = () => {
   };
 
   const drawRoute = (geoJson: any) => {
-    if (map && mapReady) { // Check if map is ready
-      console.log("drawing route");
+    if (map && mapReady) {
       if (map.getLayer("route")) {
         map.getSource("route").setData(geoJson);
       } else {
@@ -73,52 +73,56 @@ const Page = () => {
           },
         });
       }
-    } else {
-      console.log("map not found or not ready");
     }
   };
 
   const calculateRoute = async () => {
     try {
-      console.log("calculating route");
       const response = await ttServices.services.calculateRoute({
-        key: "RfJj3m7PSpmEtNUjvnMfB6199cBz2bKX",
+        key: API_KEY,
         locations: `${mapLongitude},${mapLatitude}:${destinationLongitude},${destinationLatitude}`,
-        travelMode: 'truck', // Optional, based on your needs
+        travelMode: "truck", // Optional, based on your needs
       });
-      // Convert the response to GeoJSON directly
       const geojson = response.toGeoJson();
-      console.log("Route GeoJSON:", geojson);
-
-      console.log("coordinates: ", geojson.features[0].geometry);
       drawRoute(geojson);
     } catch (error) {
       console.error("Error calculating the route: ", error);
     }
   };
 
-  useEffect(() => {
-    const fetchRoute = async () => {
-      try {
-        console.log("route calculating");
-        if (mapReady) { // Ensure the map is ready before calculating the route
-          await calculateRoute();
-          console.log("route calculated");
-        }
-      } catch (error) {
-        console.error("Error during route calculation: ", error);
-      }
-    };
+  const convertAddressToCoordinates = async (address: string) => {
+    try {
+      const response = await axios.get(
+        `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(address)}.json?key=${API_KEY}`
+      );
+      const { lat, lon } = response.data.results[0].position;
+      return { latitude: lat, longitude: lon };
+    } catch (error) {
+      console.error("Error converting address to coordinates:", error);
+      return null;
+    }
+  };
 
-    fetchRoute();
-  }, [mapReady, mapLongitude, mapLatitude, destinationLongitude, destinationLatitude]);
+  const handleUpdateCoordinates = async () => {
+    const sourceCoords = await convertAddressToCoordinates(sourceAddress);
+    const destinationCoords = await convertAddressToCoordinates(destinationAddress);
+
+    if (sourceCoords && destinationCoords) {
+      setMapLongitude(sourceCoords.longitude);
+      setMapLatitude(sourceCoords.latitude);
+      setDestinationLongitude(destinationCoords.longitude);
+      setDestinationLatitude(destinationCoords.latitude);
+      updateMap();
+      calculateRoute(); // Recalculate the route with new coordinates
+    }
+  };
 
   useEffect(() => {
     let mapInstance = tt.map({
-      key: "RfJj3m7PSpmEtNUjvnMfB6199cBz2bKX",
+      key: API_KEY,
       container: mapElement.current,
       center: [mapLongitude, mapLatitude],
-      zoom: mapZoom
+      zoom: mapZoom,
     });
 
     markerRef.current = new tt.Marker().setLngLat([mapLongitude, mapLatitude]).addTo(mapInstance);
@@ -142,39 +146,21 @@ const Page = () => {
           <Col xs="4">
             <h4>Map Controls</h4>
             <FormGroup>
-              <Label for="longitude">Source Longitude</Label>
+              <Label for="sourceAddress">Source Address</Label>
               <Input
                 type="text"
-                name="longitude"
-                value={mapLongitude}
-                onChange={(e) => setMapLongitude(e.target.value)}
+                name="sourceAddress"
+                value={sourceAddress}
+                onChange={(e) => setSourceAddress(e.target.value)}
               />
             </FormGroup>
             <FormGroup>
-              <Label for="latitude">Source Latitude</Label>
+              <Label for="destinationAddress">Destination Address</Label>
               <Input
                 type="text"
-                name="latitude"
-                value={mapLatitude}
-                onChange={(e) => setMapLatitude(e.target.value)}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label for="longitude">Destination Longitude</Label>
-              <Input
-                type="text"
-                name="destinationLongitude"
-                value={destinationLongitude}
-                onChange={(e) => setDestinationLongitude(e.target.value)}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label for="latitude">Destination Latitude</Label>
-              <Input
-                type="text"
-                name="destinationLatitude"
-                value={destinationLatitude}
-                onChange={(e) => setDestinationLatitude(e.target.value)}
+                name="destinationAddress"
+                value={destinationAddress}
+                onChange={(e) => setDestinationAddress(e.target.value)}
               />
             </FormGroup>
             <Col xs="12">
@@ -191,7 +177,7 @@ const Page = () => {
             </Col>
             <Col xs="12">
               <Row className="updateButton">
-                <Button color="primary" onClick={updateMap}>
+                <Button color="primary" onClick={handleUpdateCoordinates}>
                   Update Map
                 </Button>
               </Row>

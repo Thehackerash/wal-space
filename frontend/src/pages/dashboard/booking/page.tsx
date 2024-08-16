@@ -33,7 +33,7 @@ const page = () => {
               className: "hover:cursor-pointer",
             },
             {
-              title: "Generate Estimate Time",
+              title: "Generate Shortest Route",
               onClick: () => {
                 navigate("/dashboard/booking/2");
               },
