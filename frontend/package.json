@@ -13,6 +13,7 @@
     "@deck.gl/react": "^9.0.25",
     "@reduxjs/toolkit": "^2.2.7",
     "@tomtom-international/web-sdk-maps": "^6.25.0",
+    "@tomtom-international/web-sdk-services": "^6.25.0",
     "@types/react-redux": "^7.1.33",
     "antd": "^5.19.4",
     "axios": "^1.7.3",
